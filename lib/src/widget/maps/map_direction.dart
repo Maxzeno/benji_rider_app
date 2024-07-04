@@ -152,8 +152,10 @@ class _MapDirectionState extends State<MapDirection> {
   //====================================== Get Location Markers =========================================\\
 
   _loadCustomMarkers() async {
+    print('part 3 -1');
     Position userLocation = await Geolocator.getCurrentPosition(
         desiredAccuracy: LocationAccuracy.high);
+    print("${userLocation.latitude}, ${userLocation.longitude}");
     riderLocation = LatLng(userLocation.latitude, userLocation.longitude);
 
     List<LatLng> latLng = <LatLng>[
@@ -177,6 +179,7 @@ class _MapDirectionState extends State<MapDirection> {
       );
       setState(() {});
     }
+    print('part 3');
   }
 
   //============================================== Adding polypoints ==================================================\\
