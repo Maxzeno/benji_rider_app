@@ -5,17 +5,18 @@ import 'dart:async';
 import 'package:benji_rider/app/businesses/businesses.dart';
 import 'package:benji_rider/app/order/order_details.dart';
 import 'package:benji_rider/app/package/package_detail.dart';
+import 'package:benji_rider/main.dart';
 import 'package:benji_rider/src/repo/controller/user_controller.dart';
 import 'package:benji_rider/src/repo/models/app_version.dart';
 import 'package:benji_rider/src/repo/utils/constants.dart';
 import 'package:benji_rider/src/widget/button/my_elevated_oval_button.dart';
 import 'package:benji_rider/src/widget/button/my_elevatedbutton.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
 import '../../src/providers/constants.dart';
 import '../../src/repo/controller/business_controller.dart';
-import '../../src/repo/controller/fcm_messaging_controller.dart';
 import '../../src/repo/controller/order_status_change.dart';
 import '../../src/repo/controller/package_controller.dart';
 import '../../src/repo/controller/tasks_controller.dart';
@@ -79,7 +80,11 @@ class _DashboardState extends State<Dashboard>
     //Get vnendors
     BusinessController.instance.getAllBusinesses();
 
-    FcmMessagingController.instance.handleFCM();
+    if (!kIsWeb) {
+      localNotificationService.initNotify().then((value) {
+        localNotificationService.messaging();
+      });
+    }
     Timer(
       const Duration(seconds: 2),
       () {

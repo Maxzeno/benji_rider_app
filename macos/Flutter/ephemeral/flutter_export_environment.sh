@@ -1,7 +1,7 @@
 #!/bin/sh
 # This is a generated file; do not edit or check into version control.
-export "FLUTTER_ROOT=/home/bomach/development/flutter"
-export "FLUTTER_APPLICATION_PATH=/home/bomach/code/benji_rider"
+export "FLUTTER_ROOT=/Users/developer/fvm/versions/3.19.5"
+export "FLUTTER_APPLICATION_PATH=/Users/developer/BOMACH/benji_rider"
 export "COCOAPODS_PARALLEL_CODE_SIGN=true"
 export "FLUTTER_BUILD_DIR=build"
 export "FLUTTER_BUILD_NAME=1.0.0"

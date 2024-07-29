@@ -24,17 +24,18 @@ dependencies:
   intl:
   shimmer:
   cached_network_image:
-  http: ^1.2.0
-  awesome_notifications:
-  awesome_notifications_fcm:
-  awesome_notifications_core:
+  http:
+  # awesome_notifications:
+  # awesome_notifications_fcm:
+  # awesome_notifications_core:
   firebase_core:
   firebase_messaging:
   web_socket_channel:
   geolocator:
   # geocoding:
   geocoding: ^3.0.0
-  google_maps_flutter: ^2.3.1
+  # google_maps_flutter: ^2.3.1
+  google_maps_flutter: ^2.6.1
   google_maps_flutter_platform_interface: ^2.4.1
   google_maps_flutter_web: ^0.5.4+2
   flutter_pw_validator: ^1.6.0
@@ -42,13 +43,16 @@ dependencies:
   liquid_pull_to_refresh: ^3.0.1
   lottie:
   flutter_layout_grid:
-  flutter_polyline_points:
+  # flutter_polyline_points:
+  flutter_polyline_points: 2.0.0
+  # google_maps_flutter: 2.6.1
   fl_chart:
   share_plus: ^7.1.0
   screenshot: ^2.1.0
   path_provider: ^2.1.1
   pdf: ^3.10.4
   url_launcher:
+  flutter_local_notifications:
 
 dev_dependencies:
   flutter_test:

@@ -7,7 +7,6 @@ import '../../src/providers/constants.dart';
 import '../../src/repo/controller/account_controller.dart';
 import '../../src/repo/controller/auth_controller.dart';
 import '../../src/repo/controller/order_controller.dart';
-import '../../src/repo/controller/push_notifications_controller.dart';
 import '../../src/repo/controller/user_controller.dart';
 import '../../src/repo/controller/withdraw_controller.dart';
 import '../../theme/colors.dart';
@@ -25,7 +24,6 @@ class _StartupSplashscreenState extends State<StartupSplashscreen> {
   @override
   void initState() {
     super.initState();
-    PushNotificationController.initializeNotification();
     UserController.instance.ifUser().then((value) {
       if (value) {
         OrderController.instance.getOrdersByStatus();

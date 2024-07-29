@@ -1,11 +1,15 @@
 // ignore_for_file: unused_field
 
 import 'dart:async';
+import 'dart:convert';
 import 'dart:ui' as ui; // Import the ui library with an alias
 
 import 'package:benji_rider/src/providers/keys.dart';
+import 'package:benji_rider/src/repo/utils/network_utils.dart';
+import 'package:benji_rider/src/repo/utils/points.dart';
 import 'package:benji_rider/src/widget/section/my_appbar.dart';
 import 'package:benji_rider/theme/colors.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_polyline_points/flutter_polyline_points.dart';
@@ -31,7 +35,9 @@ class _MapDirectionState extends State<MapDirection> {
     super.initState();
     _markerTitle = <String>["Me", "Destination"];
     _markerSnippet = <String>["My Location", "Heading to"];
-    destinationLocation = LatLng(widget.latitude, widget.longitude);
+    // destinationLocation = LatLng(widget.latitude, widget.longitude);
+    destinationLocation = const LatLng(6.440320211018582, 7.501301363958105);
+    riderLocation = const LatLng(6.494750367991621, 7.495600697299079);
 
     _loadMapData();
   }
@@ -110,8 +116,8 @@ class _MapDirectionState extends State<MapDirection> {
     }
     print('part 1');
     await _getUserCurrentLocation();
-    await _loadCustomMarkers();
-    getPolyPoints();
+    // await _loadCustomMarkers();
+    // getPolyPoints();
   }
 
 //============================================== Get Current Location ==================================================\\
@@ -119,10 +125,11 @@ class _MapDirectionState extends State<MapDirection> {
   Future<Position> _getUserCurrentLocation() async {
     Position userLocation = await Geolocator.getCurrentPosition(
         desiredAccuracy: LocationAccuracy.high);
-    riderLocation = LatLng(userLocation.latitude, userLocation.longitude);
+    // riderLocation = LatLng(userLocation.latitude, userLocation.longitude);
+    riderLocation = const LatLng(6.494750367991621, 7.495600697299079);
 
     LatLng latLngPosition =
-        LatLng(userLocation.latitude, userLocation.longitude);
+        LatLng(riderLocation!.latitude, riderLocation!.longitude);
 
     CameraPosition cameraPosition =
         CameraPosition(target: latLngPosition, zoom: 14);
@@ -156,10 +163,11 @@ class _MapDirectionState extends State<MapDirection> {
     Position userLocation = await Geolocator.getCurrentPosition(
         desiredAccuracy: LocationAccuracy.high);
     print("${userLocation.latitude}, ${userLocation.longitude}");
-    riderLocation = LatLng(userLocation.latitude, userLocation.longitude);
+    // riderLocation = LatLng(userLocation.latitude, userLocation.longitude);
+    riderLocation = const LatLng(6.494750367991621, 7.495600697299079);
 
     List<LatLng> latLng = <LatLng>[
-      LatLng(userLocation.latitude, userLocation.longitude),
+      LatLng(riderLocation!.latitude, riderLocation!.longitude),
       destinationLocation
     ];
     for (int i = 0; i < _customMarkers.length; i++) {
@@ -182,67 +190,127 @@ class _MapDirectionState extends State<MapDirection> {
     print('part 3');
   }
 
-  //============================================== Adding polypoints ==================================================\\
-  void getPolyPoints() async {
-    print('getPolyPoints 1');
+  //==============================================  Polypoints ==================================================\\
 
-    // Ensure that riderLocation and destinationLocation are not null
+  void getPolyPoints() async {
     if (riderLocation == null) {
       print('Error: riderLocation is null');
       return;
     }
 
-    try {
-      final List<MarkerId> markerId = <MarkerId>[
-        const MarkerId("Location"),
-        const MarkerId("Destination"),
-      ];
-      List<String> markerTitle = <String>["Location", "Destination"];
-
-      final List<LatLng> locations = <LatLng>[
-        riderLocation!,
-        destinationLocation
-      ];
-      final List<BitmapDescriptor> markers = <BitmapDescriptor>[
-        BitmapDescriptor.defaultMarker,
-        BitmapDescriptor.defaultMarkerWithHue(8),
-      ];
-
-      for (var i = 0; i < markerId.length; i++) {
-        _markers.add(
-          Marker(
-            markerId: markerId[i],
-            position: locations[i],
-            icon: markers[i],
-            visible: true,
-            infoWindow: InfoWindow(title: markerTitle[i]),
-          ),
-        );
+    LatLng from = riderLocation!;
+    LatLng to = destinationLocation;
+    print(from);
+    print(to);
+    print('get poly points');
+    if (kIsWeb) {
+      String routeStr =
+          'https://maps.googleapis.com/maps/api/directions/json?origin=${from.latitude},${from.longitude}&destination=${to.latitude},${to.longitude}&mode=driving&avoidHighways=false&avoidFerries=true&avoidTolls=false&alternatives=false&key=$googleMapsApiKey';
+      String? response = await NetworkUtility.fetchUrl(Uri.parse(routeStr));
+      // var resp = await http.get(Uri.parse(routeStr));
+      if (response == null) {
+        return;
+      }
+      Map data = jsonDecode(response);
+      if (data['routes'].isEmpty) {
+        return;
       }
 
-      PolylinePoints polyLinePoints = PolylinePoints();
-      PolylineResult result = await polyLinePoints.getRouteBetweenCoordinates(
-        googleMapsApiKey,
-        PointLatLng(riderLocation!.latitude, riderLocation!.longitude),
-        PointLatLng(
-            destinationLocation.latitude, destinationLocation.longitude),
-      );
-
-      if (result.points.isNotEmpty) {
-        for (var point in result.points) {
+      var overviewPolyline = MyNetworkUtil().decodeEncodedPolyline(
+          data['routes'][0]['overview_polyline']['points']);
+      if (overviewPolyline.isNotEmpty) {
+        for (var point in overviewPolyline) {
           _polylineCoordinates.add(LatLng(point.latitude, point.longitude));
         }
         setState(() {});
-      } else {
-        print('Error: No points in PolylineResult');
       }
-    } catch (e, stacktrace) {
-      print('Error: $e');
-      print('Stacktrace: $stacktrace');
+      return;
     }
+    print('getRouteBetweenCoordinates 1');
 
-    print('getPolyPoints 2');
+    PolylinePoints polylinePoints = PolylinePoints();
+    print(googleMapsApiKey);
+
+    print(PointLatLng(riderLocation!.latitude, riderLocation!.longitude));
+    print(PointLatLng(
+        destinationLocation.latitude, destinationLocation.longitude));
+
+    PolylineResult result = await polylinePoints.getRouteBetweenCoordinates(
+      googleMapsApiKey,
+      PointLatLng(riderLocation!.latitude, riderLocation!.longitude),
+      PointLatLng(destinationLocation.latitude, destinationLocation.longitude),
+    );
+
+    print('getRouteBetweenCoordinates 2');
+
+    if (result.points.isNotEmpty) {
+      for (var point in result.points) {
+        _polylineCoordinates.add(LatLng(point.latitude, point.longitude));
+      }
+      setState(() {});
+    }
   }
+  //============================================== Adding polypoints ==================================================\\
+  // void getPolyPoints() async {
+  //   print('getPolyPoints 1');
+
+  //   // Ensure that riderLocation and destinationLocation are not null
+  //   if (riderLocation == null) {
+  //     print('Error: riderLocation is null');
+  //     return;
+  //   }
+
+  //   try {
+  //     final List<MarkerId> markerId = <MarkerId>[
+  //       const MarkerId("Location"),
+  //       const MarkerId("Destination"),
+  //     ];
+  //     List<String> markerTitle = <String>["Location", "Destination"];
+
+  //     final List<LatLng> locations = <LatLng>[
+  //       riderLocation!,
+  //       destinationLocation
+  //     ];
+  //     final List<BitmapDescriptor> markers = <BitmapDescriptor>[
+  //       BitmapDescriptor.defaultMarker,
+  //       BitmapDescriptor.defaultMarkerWithHue(8),
+  //     ];
+
+  //     for (var i = 0; i < markerId.length; i++) {
+  //       _markers.add(
+  //         Marker(
+  //           markerId: markerId[i],
+  //           position: locations[i],
+  //           icon: markers[i],
+  //           visible: true,
+  //           infoWindow: InfoWindow(title: markerTitle[i]),
+  //         ),
+  //       );
+  //     }
+
+  //     PolylinePoints polyLinePoints = PolylinePoints();
+  //     PolylineResult result = await polyLinePoints.getRouteBetweenCoordinates(
+  //       googleMapsApiKey,
+  //       PointLatLng(riderLocation!.latitude, riderLocation!.longitude),
+  //       PointLatLng(
+  //           destinationLocation.latitude, destinationLocation.longitude),
+  //     );
+
+  //     if (result.points.isNotEmpty) {
+  //       for (var point in result.points) {
+  //         _polylineCoordinates.add(LatLng(point.latitude, point.longitude));
+  //       }
+  //       setState(() {});
+  //     } else {
+  //       print('Error: No points in PolylineResult');
+  //     }
+  //   } catch (e, stacktrace) {
+  //     print('Error: $e');
+  //     print('Stacktrace: $stacktrace');
+  //   }
+
+  //   print('getPolyPoints 2');
+  // }
 
   // void getPolyPoints() async {
   //   print('getPolyPoints 1');
@@ -342,7 +410,7 @@ class _MapDirectionState extends State<MapDirection> {
                         minMaxZoomPreference: MinMaxZoomPreference.unbounded,
                         tiltGesturesEnabled: true,
                         zoomGesturesEnabled: false,
-                        fortyFiveDegreeImageryEnabled: true,
+                        // fortyFiveDegreeImageryEnabled: true,
                         myLocationButtonEnabled: true,
                         myLocationEnabled: true,
                         cameraTargetBounds: CameraTargetBounds.unbounded,
