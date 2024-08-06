@@ -119,6 +119,7 @@ class _MapDirectionState extends State<MapDirection> {
     Position userLocation = await Geolocator.getCurrentPosition(
         desiredAccuracy: LocationAccuracy.high);
     riderLocation = LatLng(userLocation.latitude, userLocation.longitude);
+    // riderLocation = const LatLng(6.47955164513362, 7.504734591484878);
 
     LatLng latLngPosition =
         LatLng(userLocation.latitude, userLocation.longitude);
@@ -150,12 +151,12 @@ class _MapDirectionState extends State<MapDirection> {
   //====================================== Get Location Markers =========================================\\
 
   _loadCustomMarkers() async {
-    Position userLocation = await Geolocator.getCurrentPosition(
-        desiredAccuracy: LocationAccuracy.high);
-    riderLocation = LatLng(userLocation.latitude, userLocation.longitude);
+    // Position userLocation = await Geolocator.getCurrentPosition(
+    //     desiredAccuracy: LocationAccuracy.high);
+    // riderLocation = LatLng(userLocation.latitude, userLocation.longitude);
 
     List<LatLng> latLng = <LatLng>[
-      LatLng(userLocation.latitude, userLocation.longitude),
+      LatLng(riderLocation!.latitude, riderLocation!.longitude),
       destinationLocation
     ];
     for (int i = 0; i < _customMarkers.length; i++) {
