@@ -19,10 +19,11 @@ class SelectBankBody extends StatefulWidget {
 }
 
 class _SelectBankBodyState extends State<SelectBankBody> {
-  List<BankModel> listOfBanksSearch = WithdrawController.instance.listOfBanks;
+    List<BankModel> listOfBanksSearch = WithdrawController.instance.listOfBanks;
 
   @override
   void initState() {
+
     super.initState();
   }
 
@@ -34,7 +35,7 @@ class _SelectBankBodyState extends State<SelectBankBody> {
   //==================  CONTROLLERS ==================\\
   final scrollController = ScrollController();
   final bankQueryEC = TextEditingController();
-
+ 
   //================== FUNCTIONS ==================\\
 
   void onChanged(String search) {
@@ -45,12 +46,17 @@ class _SelectBankBodyState extends State<SelectBankBody> {
         listOfBanksSearch = list;
       });
     } else {
-      listOfBanksSearch = list.where((bank) {
-        return bank.name.toLowerCase().contains(search);
-      }).toList();
-      setState(() {});
+      listOfBanksSearch = list
+          .where((bank) {
+            return bank.name.toLowerCase().contains(search);
+            })
+          .toList();
+          setState(() {
+            
+          });
     }
   }
+
 
   selectBank(index) async {
     final newBankName = listOfBanksSearch[index].name;
@@ -71,10 +77,8 @@ class _SelectBankBodyState extends State<SelectBankBody> {
         children: [
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-            child: SearchBar(
-              constraints: const BoxConstraints.tightFor(),
-              padding: const MaterialStatePropertyAll(
-                  EdgeInsets.symmetric(horizontal: 10, vertical: 10)),
+            child: SearchBar(constraints: const BoxConstraints.tightFor(),
+              padding: const MaterialStatePropertyAll(EdgeInsets.symmetric(horizontal: 10, vertical: 10)),
               controller: bankQueryEC,
               hintText: "Search bank",
               backgroundColor: MaterialStatePropertyAll(
@@ -95,24 +99,25 @@ class _SelectBankBodyState extends State<SelectBankBody> {
           ),
           Expanded(
             child: listOfBanksSearch.isEmpty
-                ? const EmptyCard(
-                    emptyCardMessage: "There are no banks",
-                  )
-                : ListView.separated(
-                    controller: scrollController,
-                    shrinkWrap: true,
-                    physics: const BouncingScrollPhysics(),
-                    padding: const EdgeInsets.all(10),
-                    itemCount: listOfBanksSearch.length,
-                    separatorBuilder: (context, index) => kSizedBox,
-                    itemBuilder: (context, index) {
-                      final bankName = listOfBanksSearch[index].name;
-                      return BankListTile(
-                        onTap: () => selectBank(index),
-                        bank: bankName,
-                      );
-                    },
-                  ),
+                      ? const EmptyCard(
+                          emptyCardMessage: "There are no banks",
+                        )
+                      
+                      : ListView.separated(
+                        controller: scrollController,
+                          shrinkWrap: true,
+                          physics: const BouncingScrollPhysics(),
+                          padding: const EdgeInsets.all(10),
+                          itemCount: listOfBanksSearch.length,
+                          separatorBuilder: (context, index) => kSizedBox,
+                          itemBuilder: (context, index) {
+                            final bankName = listOfBanksSearch[index].name;
+                              return BankListTile(
+                                onTap: () => selectBank(index),
+                                bank: bankName,
+                              );
+                          },
+                        ),
           ),
         ],
       ),

@@ -61,6 +61,7 @@ class BusinessController extends GetxController {
         parsedURL,
         headers: authHeader(),
       );
+      print(response.body);
 
       if (response.body.isEmpty) {
         isLoad.value = false;

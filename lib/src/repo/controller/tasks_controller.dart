@@ -5,9 +5,11 @@ import 'dart:developer';
 import 'package:geolocator/geolocator.dart';
 import 'package:get/get.dart';
 import 'package:http/http.dart' as http;
+import 'package:web_socket_channel/status.dart' as status;
 import 'package:web_socket_channel/web_socket_channel.dart';
 
 import '../models/delivery_model.dart';
+import '../utils/constants.dart';
 import '../utils/helpers.dart';
 import 'api_url.dart';
 import 'user_controller.dart';
@@ -84,15 +86,21 @@ class TasksController extends GetxController {
     channelTask.sink.add(jsonEncode({
       'rider_id': UserController.instance.user.value.id,
     }));
+    // log({
+    //   'rider_id': UserController.instance.user.value.id,
+    // });
 
-    Timer.periodic(const Duration(seconds: 10), (timer) {
+    Timer.periodic(const Duration(minutes: 1), (timer) {
       channelTask.sink.add(jsonEncode({
         'rider_id': UserController.instance.user.value.id,
       }));
+      // log({
+      //   'rider_id': UserController.instance.user.value.id,
+      // });
     });
 
     channelTask.stream.listen((message) {
-      print(message);
+      log(message);
       List data = [];
       data.addAll(jsonDecode(message)['message'] as List);
       data.addAll(jsonDecode(message)['packages'] as List);
@@ -123,10 +131,8 @@ class TasksController extends GetxController {
       return;
     }
 
-    if (permission == LocationPermission.denied
-        // ||
-        // permission == LocationPermission.unableToDetermine
-        ) {
+    if (permission == LocationPermission.denied ||
+        permission == LocationPermission.unableToDetermine) {
       permission = await Geolocator.requestPermission();
       if (permission == LocationPermission.denied) {
         return;
@@ -152,6 +158,9 @@ class TasksController extends GetxController {
   closeTaskSocket() {
     channel.sink.close(1000);
     channelTask.sink.close(1000);
+
+    // channel.sink.close(status.goingAway);
+    // channelTask.sink.close(status.goingAway);
   }
 
   bool isAccepted(DeliveryModel val) {

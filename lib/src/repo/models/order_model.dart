@@ -1,6 +1,5 @@
 import 'dart:convert';
 
-import 'package:benji_rider/src/repo/controller/api_url.dart';
 import 'package:http/http.dart' as http;
 
 import '../../providers/constants.dart';
@@ -56,7 +55,7 @@ class Order {
           : (json["orderitems"] as List)
               .map((item) => OrderItem.fromJson(item))
               .toList(),
-      created: json["created"] ?? "",
+      created: json["created"] ?? notAvailable,
       deliveryAddress: Address.fromJson(json["delivery_address"]),
     );
   }

@@ -5,13 +5,8 @@ import 'dart:async';
 import 'package:benji_rider/app/businesses/businesses.dart';
 import 'package:benji_rider/app/order/order_details.dart';
 import 'package:benji_rider/app/package/package_detail.dart';
-import 'package:benji_rider/main.dart';
 import 'package:benji_rider/src/repo/controller/user_controller.dart';
-import 'package:benji_rider/src/repo/models/app_version.dart';
-import 'package:benji_rider/src/repo/utils/constants.dart';
 import 'package:benji_rider/src/widget/button/my_elevated_oval_button.dart';
-import 'package:benji_rider/src/widget/button/my_elevatedbutton.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
@@ -80,22 +75,6 @@ class _DashboardState extends State<Dashboard>
     //Get vnendors
     BusinessController.instance.getAllBusinesses();
 
-    if (!kIsWeb) {
-      localNotificationService.initNotify().then((value) {
-        localNotificationService.messaging();
-      });
-    }
-    Timer(
-      const Duration(seconds: 2),
-      () {
-        getAppLatestVersion().then((value) {
-          if (value.version == "0" || value.version == appVersion) {
-            return;
-          }
-          showAppUpdateDialog(context, value);
-        });
-      },
-    );
     super.initState();
   }
 
@@ -176,16 +155,27 @@ class _DashboardState extends State<Dashboard>
               builder: (controller) {
                 return Row(
                   children: [
-                    Text(
-                      controller.user.value.isOnline ? 'Online' : 'Offline',
-                      style: TextStyle(
-                        fontSize: 15,
-                        fontWeight: FontWeight.w500,
-                        color: controller.isLoadingOnline.value
-                            ? kBlackColor.withOpacity(0.5)
-                            : kBlackColor,
-                      ),
-                    ),
+                    controller.user.value.isOnline
+                        ? Text(
+                            'Online',
+                            style: TextStyle(
+                              fontSize: 15,
+                              fontWeight: FontWeight.w500,
+                              color: controller.isLoadingOnline.value
+                                  ? kBlackColor.withOpacity(0.5)
+                                  : kBlackColor,
+                            ),
+                          )
+                        : Text(
+                            'Offline',
+                            style: TextStyle(
+                              fontSize: 15,
+                              fontWeight: FontWeight.w500,
+                              color: controller.isLoadingOnline.value
+                                  ? kBlackColor.withOpacity(0.5)
+                                  : kBlackColor,
+                            ),
+                          ),
                     kHalfSizedBox,
                     Transform.scale(
                       scale: 0.8, // Adjust the scale factor as needed
@@ -366,7 +356,7 @@ class _DashboardState extends State<Dashboard>
                                                 .orderitems
                                                 .first
                                                 .product
-                                                .business
+                                                .vendorId
                                                 .latitude,
                                             controller
                                                 .tasks[index]
@@ -374,7 +364,7 @@ class _DashboardState extends State<Dashboard>
                                                 .orderitems
                                                 .first
                                                 .product
-                                                .business
+                                                .vendorId
                                                 .longitude)
                                         : getAddressFromCoordinates(
                                             controller.tasks[index].package
@@ -458,46 +448,4 @@ class _DashboardState extends State<Dashboard>
       ),
     );
   }
-}
-
-void showAppUpdateDialog(context, AppVersion appVersion) {
-  showDialog(
-    context: context,
-    useSafeArea: true,
-    barrierDismissible: false,
-    builder: (context) {
-      return PopScope(
-        canPop: false,
-        child: AlertDialog(
-          title: Text(
-            "UPDATE!".toUpperCase(),
-            textAlign: TextAlign.center,
-            style: TextStyle(
-              color: kAccentColor,
-              fontSize: 18,
-              fontWeight: FontWeight.w800,
-            ),
-          ),
-          content: const Text(
-            "Please update your app",
-            textAlign: TextAlign.center,
-            maxLines: 4,
-            style: TextStyle(
-              color: kTextBlackColor,
-              fontSize: 14,
-              fontWeight: FontWeight.w500,
-            ),
-          ),
-          actions: [
-            MyElevatedButton(
-              title: "Okay",
-              onPressed: () {
-                launchDownload(appVersion.link);
-              },
-            ),
-          ],
-        ),
-      );
-    },
-  );
 }

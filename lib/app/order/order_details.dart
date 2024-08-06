@@ -28,12 +28,6 @@ class _OrderDetailsState extends State<OrderDetails> {
     super.initState();
   }
 
-  @override
-  void dispose() {
-    OrderStatusChangeController.instance.closeTaskSocket();
-    super.dispose();
-  }
-
   toMapDirectionage([String latitudeStr = '', String longitudeStr = '']) {
     double latitude;
     double longitude;
@@ -73,7 +67,7 @@ class _OrderDetailsState extends State<OrderDetails> {
   Widget build(BuildContext context) {
     var media = MediaQuery.of(context).size;
     return GetBuilder<OrderStatusChangeController>(
-        initState: OrderStatusChangeController.instance.getTaskItemSocket(),
+        init: OrderStatusChangeController(),
         builder: (controller) {
           return Scaffold(
             appBar: MyAppBar(
@@ -84,16 +78,40 @@ class _OrderDetailsState extends State<OrderDetails> {
             ),
             bottomNavigationBar: Container(
               padding: const EdgeInsets.all(kDefaultPadding),
-              child: MyElevatedButton(
-                disable: !controller.taskItemStatusUpdate.value.action,
-                title: controller.hasFetched.value
-                    ? controller.taskItemStatusUpdate.value.buttonText
-                    : "Loading...",
-                onPressed: controller.hasFetched.value
-                    ? controller.updateTaskItemStatus
-                    : () {},
-                isLoading: controller.isLoadUpdateStatus.value,
-              ),
+              child: controller.order.value.deliveryStatus == 'CANC'
+                  ? MyElevatedButton(
+                      disable: true,
+                      title: "Cancelled",
+                      onPressed: null,
+                      isLoading: controller.isLoad.value,
+                    )
+                  : controller.order.value.deliveryStatus == "PEND"
+                      ? MyElevatedButton(
+                          title: "Dispatched",
+                          onPressed: controller.orderDispatched,
+                          isLoading: controller.isLoad.value,
+                        )
+                      : controller.order.value.deliveryStatus == 'received' ||
+                              controller.order.value.deliveryStatus ==
+                                  'dispatched'
+                          ? MyElevatedButton(
+                              title: "Delivered",
+                              onPressed: controller.orderDelivered,
+                              isLoading: controller.isLoad.value,
+                            )
+                          : controller.order.value.deliveryStatus == 'COMP'
+                              ? MyElevatedButton(
+                                  disable: true,
+                                  title: "Cashout",
+                                  onPressed: controller.orderPayment,
+                                  isLoading: controller.isLoad.value,
+                                )
+                              : MyElevatedButton(
+                                  disable: true,
+                                  title: "Completed",
+                                  onPressed: null,
+                                  isLoading: controller.isLoad.value,
+                                ),
             ),
             body: ListView(
               physics: const BouncingScrollPhysics(),
@@ -279,9 +297,9 @@ class _OrderDetailsState extends State<OrderDetails> {
                                 InkWell(
                                   onTap: () => toMapDirectionage(
                                       controller.order.value.orderitems.first
-                                          .product.business.latitude,
+                                          .product.vendorId.latitude,
                                       controller.order.value.orderitems.first
-                                          .product.business.longitude),
+                                          .product.vendorId.longitude),
                                   child: Row(
                                     children: [
                                       FaIcon(
@@ -314,8 +332,7 @@ class _OrderDetailsState extends State<OrderDetails> {
                                         BorderRadius.all(Radius.circular(20)),
                                   ),
                                   child: MyImage(
-                                    url: controller.order.value.orderitems.first
-                                        .product.business.shopImage,
+                                    url: controller.order.value.client.image,
                                   ),
                                 ),
                                 kWidthSizedBox,
@@ -323,8 +340,7 @@ class _OrderDetailsState extends State<OrderDetails> {
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
                                     Text(
-                                      controller.order.value.orderitems.first
-                                          .product.business.shopName,
+                                      "${controller.order.value.orderitems.first.product.vendorId.firstName} ${controller.order.value.orderitems.first.product.vendorId.lastName}",
                                       overflow: TextOverflow.ellipsis,
                                       style: const TextStyle(
                                         color: kTextBlackColor,
@@ -335,7 +351,7 @@ class _OrderDetailsState extends State<OrderDetails> {
                                     kHalfSizedBox,
                                     Text(
                                       controller.order.value.orderitems.first
-                                          .product.business.vendorOwner.phone,
+                                          .product.vendorId.phone,
                                       style: TextStyle(
                                         color: kTextGreyColor,
                                         fontSize: 12,
@@ -353,7 +369,7 @@ class _OrderDetailsState extends State<OrderDetails> {
                                                   .orderitems
                                                   .first
                                                   .product
-                                                  .business
+                                                  .vendorId
                                                   .latitude,
                                               controller
                                                   .order
@@ -361,7 +377,7 @@ class _OrderDetailsState extends State<OrderDetails> {
                                                   .orderitems
                                                   .first
                                                   .product
-                                                  .business
+                                                  .vendorId
                                                   .longitude),
                                           builder: (context, controller) {
                                             // '6.801965310155346', '7.092915443774477'

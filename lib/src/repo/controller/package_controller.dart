@@ -1,13 +1,9 @@
 // ignore_for_file: empty_catches
 
-import 'dart:async';
 import 'dart:convert';
-import 'dart:developer';
 
-import 'package:benji_rider/src/repo/models/task_item_status_update.dart';
 import 'package:get/get.dart';
 import 'package:http/http.dart' as http;
-import 'package:web_socket_channel/web_socket_channel.dart';
 
 import '../models/delivery_model.dart';
 import '../models/package.dart';
@@ -23,13 +19,9 @@ class PackageController extends GetxController {
     return Get.find<PackageController>();
   }
 
-  var isLoadUpdateStatus = false.obs;
-  var hasFetched = false.obs;
-  late WebSocketChannel channelTask;
-  var taskItemStatusUpdate = TaskItemStatusUpdate.fromJson(null).obs;
-
   var isLoad = false.obs;
   var vendorsOrderList = <DeliveryModel>[].obs;
+
   var loadedAll = false.obs;
   var isLoadMore = false.obs;
   var loadNum = 10.obs;
@@ -37,6 +29,7 @@ class PackageController extends GetxController {
   var status = StatusType.processing.obs;
 
   var package = Package.fromJson(null).obs;
+
   var task = DeliveryModel.fromJson(null).obs;
 
   setStatus([StatusType newStatus = StatusType.delivered]) async {
@@ -71,6 +64,9 @@ class PackageController extends GetxController {
     String token = UserController.instance.user.value.token;
     http.Response? response = await HandleData.getApi(url, token);
     var responseData = await ApiProcessorController.errorState(response);
+    // print(response?.body);
+    // print(response?.statusCode);
+    // PackageController.instance.getPackagesByStatus();
 
     if (responseData == null) {
       isLoad.value = false;
@@ -115,64 +111,70 @@ class PackageController extends GetxController {
     update();
   }
 
-  getTaskItemSocket() {
-    final wsUrlTask = Uri.parse('$websocketBaseUrl/packageStatus/');
-    channelTask = WebSocketChannel.connect(wsUrlTask);
-    channelTask.sink.add(jsonEncode({
-      'user_id': UserController.instance.user.value.id,
-      'package_id': package.value.id,
-      'user_type': 'rider'
-    }));
+  orderDelivered(String packageCode) async {
+    isLoad.value = true;
+    update();
 
-    Timer.periodic(const Duration(seconds: 10), (timer) {
-      channelTask.sink.add(jsonEncode({
-        'user_id': UserController.instance.user.value.id,
-        'package_id': package.value.id,
-        'user_type': 'rider'
-      }));
-    });
+    var url =
+        "${Api.baseUrl}/sendPackage/packageUserStatus/${package.value.id}/$packageCode";
+    // await FormController.instance.getAuth(url, 'orderDelivered');
 
-    channelTask.stream.listen((message) {
-      log(message);
-      taskItemStatusUpdate.value =
-          TaskItemStatusUpdate.fromJson(jsonDecode(message));
-      refreshPackage();
-      if (hasFetched.value != true) {
-        hasFetched.value = true;
+    final user = UserController.instance.user.value;
+    http.Response? response = await HandleData.getApi(url, user.token);
+    // var responseData = await ApiProcessorController.errorState(response);
+    // print('response?.body package ${response?.body}');
+    try {
+      final data = (jsonDecode(response!.body) as Map);
+      // print('passed the first one');
+      if (data['message'] == null && response.statusCode == 200) {
+        ApiProcessorController.successSnack('Package delivered success');
       }
-      update();
-    });
-  }
-
-  updateTaskItemStatus({String query = ""}) async {
-    isLoadUpdateStatus.value = true;
-    update();
-
-    var url = "${Api.baseUrl}${taskItemStatusUpdate.value.url}$query";
-    print(url);
-    final response = await http.get(
-      Uri.parse(url),
-      headers: authHeader(),
-    );
-    print(response.body);
-    dynamic data = jsonDecode(response.body);
-
-    if (response.statusCode.toString().startsWith('2')) {
-      channelTask.sink.add(jsonEncode({
-        'user_id': UserController.instance.user.value.id,
-        'package_id': package.value.id,
-        'user_type': 'rider'
-      }));
-      package.value = Package.fromJson(data);
-      ApiProcessorController.successSnack("Updated successfully");
-    } else {
-      ApiProcessorController.errorSnack(data['detail']);
+      ApiProcessorController.errorSnack(data['message']);
+    } catch (e) {
+      ApiProcessorController.errorSnack('An error occured');
     }
-    isLoadUpdateStatus.value = false;
+
+    isLoad.value = false;
     update();
+    // print(FormController.instance.status);
+
+    // if (FormController.instance.status.toString().startsWith('2')) {
+    //   // await orderDelivered();
+    // } else {
+    //   ApiProcessorController.errorSnack('An error occured');
+    // }
+    // await refreshPackage();
+    await refreshPackage();
   }
 
-  closeTaskSocket() {
-    channelTask.sink.close(1000);
+  orderDispatched() async {
+    isLoad.value = true;
+    update();
+
+    var url =
+        "${Api.baseUrl}/sendPackage/riderReceiveStatus/${package.value.id}";
+    await FormController.instance.getAuth(url, 'dispatchPackage');
+    // print(FormController.instance.status);
+
+    if (FormController.instance.status.toString().startsWith('2')) {}
+    await refreshPackage();
+  }
+
+  packagePayment() async {
+    isLoad.value = true;
+    final user = UserController.instance.user.value;
+    update();
+
+    var url =
+        "${Api.baseUrl}/drivers/completeMyPackageTask/${task.value.id}/${user.id}";
+
+    await FormController.instance.getAuth(url, 'taskPayment');
+
+    if (FormController.instance.status.toString().startsWith('2')) {
+      ApiProcessorController.successSnack('Withdrawal successful');
+    } else {
+      ApiProcessorController.errorSnack(
+          'Either you have already withdrawn or an error occured');
+    }
   }
 }
