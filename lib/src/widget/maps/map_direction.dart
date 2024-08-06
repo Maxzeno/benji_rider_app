@@ -236,9 +236,13 @@ class _MapDirectionState extends State<MapDirection> {
         destinationLocation.latitude, destinationLocation.longitude));
 
     PolylineResult result = await polylinePoints.getRouteBetweenCoordinates(
-      googleMapsApiKey,
-      PointLatLng(riderLocation!.latitude, riderLocation!.longitude),
-      PointLatLng(destinationLocation.latitude, destinationLocation.longitude),
+      request: PolylineRequest(
+          origin:
+              PointLatLng(riderLocation!.latitude, riderLocation!.longitude),
+          destination: PointLatLng(
+              destinationLocation.latitude, destinationLocation.longitude),
+          mode: TravelMode.driving),
+      googleApiKey: googleMapsApiKey,
     );
 
     print('getRouteBetweenCoordinates 2');

@@ -8,7 +8,6 @@ import 'package:http/http.dart' as http;
 import 'package:web_socket_channel/web_socket_channel.dart';
 
 import '../models/delivery_model.dart';
-import '../utils/constants.dart';
 import '../utils/helpers.dart';
 import 'api_url.dart';
 import 'user_controller.dart';
@@ -124,8 +123,10 @@ class TasksController extends GetxController {
       return;
     }
 
-    if (permission == LocationPermission.denied ||
-        permission == LocationPermission.unableToDetermine) {
+    if (permission == LocationPermission.denied
+        // ||
+        // permission == LocationPermission.unableToDetermine
+        ) {
       permission = await Geolocator.requestPermission();
       if (permission == LocationPermission.denied) {
         return;
