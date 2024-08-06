@@ -337,9 +337,9 @@ class _PackageDetailsState extends State<PackageDetails> {
                                   child: FutureBuilder(
                                       future: getAddressFromCoordinates(
                                           controller.package.value
-                                              .dropOffAddressLatitude,
+                                              .pickUpAddressLatitude,
                                           controller.package.value
-                                              .dropOffAddressLongitude),
+                                              .pickUpAddressLongitude),
                                       builder: (context, controller) {
                                         return Text(
                                           controller.data ?? 'Loading...',
@@ -397,9 +397,9 @@ class _PackageDetailsState extends State<PackageDetails> {
                             InkWell(
                               onTap: () => toMapDirectionage(
                                   controller
-                                      .package.value.pickUpAddressLatitude,
+                                      .package.value.dropOffAddressLatitude,
                                   controller
-                                      .package.value.pickUpAddressLongitude),
+                                      .package.value.dropOffAddressLongitude),
                               child: Row(
                                 children: [
                                   Icon(
