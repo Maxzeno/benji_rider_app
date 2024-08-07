@@ -1,11 +1,11 @@
 // ignore_for_file:  unused_local_variable
 
 import 'dart:async';
-import 'dart:io';
 
 import 'package:benji_rider/app/businesses/businesses.dart';
 import 'package:benji_rider/app/order/order_details.dart';
 import 'package:benji_rider/app/package/package_detail.dart';
+import 'package:benji_rider/main.dart';
 import 'package:benji_rider/src/repo/controller/user_controller.dart';
 import 'package:benji_rider/src/repo/models/app_version.dart';
 import 'package:benji_rider/src/repo/utils/constants.dart';
@@ -81,7 +81,11 @@ class _DashboardState extends State<Dashboard>
     //Get vnendors
     BusinessController.instance.getAllBusinesses();
 
-    if (!kIsWeb && Platform.isAndroid) {
+    localNotificationService.initNotify().then((value) {
+      localNotificationService.messaging();
+    });
+
+    if (!kIsWeb) {
       Timer(
         const Duration(seconds: 2),
         () {

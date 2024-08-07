@@ -1,7 +1,6 @@
 import 'package:benji_rider/src/repo/controller/auth_controller.dart';
 import 'package:benji_rider/src/repo/controller/push_notifications_controller.dart';
 import 'package:firebase_core/firebase_core.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
@@ -50,15 +49,13 @@ void main() async {
   Get.put(PackageController());
   Get.put(AuthController());
 
-  if (!kIsWeb) {
-    await Firebase.initializeApp(
-      options: DefaultFirebaseOptions.currentPlatform,
-    );
-    localNotificationService = MyPushNotification();
+  await Firebase.initializeApp(
+    options: DefaultFirebaseOptions.currentPlatform,
+  );
+  localNotificationService = MyPushNotification();
 
-    await localNotificationService.firebase.setAutoInitEnabled(true);
-    await localNotificationService.setup();
-  }
+  await localNotificationService.firebase.setAutoInitEnabled(true);
+  await localNotificationService.setup();
 
   runApp(const MyApp());
 }

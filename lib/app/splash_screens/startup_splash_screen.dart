@@ -1,4 +1,3 @@
-import 'package:benji_rider/main.dart';
 import 'package:benji_rider/src/repo/controller/package_controller.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
@@ -25,9 +24,6 @@ class _StartupSplashscreenState extends State<StartupSplashscreen> {
   @override
   void initState() {
     super.initState();
-    localNotificationService.initNotify().then((value) {
-      localNotificationService.messaging();
-    });
     UserController.instance.ifUser().then((value) {
       if (value) {
         OrderController.instance.getOrdersByStatus();
