@@ -26,10 +26,7 @@ class DefaultFirebaseOptions {
       case TargetPlatform.android:
         return android;
       case TargetPlatform.iOS:
-        throw UnsupportedError(
-          'DefaultFirebaseOptions have not been configured for ios - '
-          'you can reconfigure this by running the FlutterFire CLI again.',
-        );
+        return ios;
       case TargetPlatform.macOS:
         throw UnsupportedError(
           'DefaultFirebaseOptions have not been configured for macos - '
@@ -51,6 +48,15 @@ class DefaultFirebaseOptions {
         );
     }
   }
+
+  static const FirebaseOptions ios = FirebaseOptions(
+    apiKey: 'AIzaSyAeh7EOibu1oSvrwOJ5B_nYfHFYy8ALPYs',
+    appId: '1:412444903210:ios:ed4b25e67f7cafc537c053',
+    messagingSenderId: '412444903210',
+    projectId: 'benji-rider',
+    storageBucket: 'benji-rider.appspot.com',
+    iosBundleId: 'com.benjiexpress.rider.ios',
+  );
 
   static const FirebaseOptions android = FirebaseOptions(
     apiKey: 'AIzaSyAZofdP5ESaJI360BW02unpEHj_BLm-3Nc',
